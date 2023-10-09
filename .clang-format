@@ -1,0 +1,15 @@
+---
+# This is the clang-format config file for this project
+# See README.md to see how to set up autoformatting to keep code consistently formatted (if interested)
+# GitHub will be set to automatically format code on pull request to main
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 120
+IndentWidth: 4
+UseTab: Never
+TabWidth: 4
+BreakBeforeBraces: Attach
+DerivePointerAlignment: false
+PointerAlignment: Left
+AlignAfterOpenBracket: AlwaysBreak
+AllowShortIfStatementsOnASingleLine: false
