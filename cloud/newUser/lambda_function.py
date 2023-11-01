@@ -1,6 +1,5 @@
 import json
 import boto3
-import bcrypt
 import uuid
 from botocore.exceptions import ClientError
 from pydantic import BaseModel, ValidationError
@@ -31,8 +30,8 @@ def lambda_handler(event, context):
         returnError(e.errors())
 
     plaintext_password = body.password.encode("utf-8")  # Convert string to bytes
-    salt = bcrypt.gensalt()  # Generate a salt
-    body.password = bcrypt.hashpw(plaintext_password, salt)
+    # salt = bcrypt.gensalt()  # Generate a salt
+    # body.password = bcrypt.hashpw(plaintext_password, salt)
 
     user = body.model_dump()
     user["user_id"] = uuid.uuid4()
