@@ -4,12 +4,16 @@ import bcrypt
 import uuid
 from botocore.exceptions import ClientError
 from pydantic import BaseModel, ValidationError
+from typing import Optional
+
+# TODO: response should be just the uuid, and need to add config for sudo user + user state init
 
 
 class NewUserRequestBody(BaseModel):
     name: str
     username: str
     password: str
+    is_sudo: Optional[bool] = False
 
 
 error_response = {
@@ -37,6 +41,7 @@ def lambda_handler(event, context):
 
     user = body.model_dump()
     user["user_id"] = str(uuid.uuid4())
+    user["state"] = "DO_NOT_UNLOCK"
 
     print(f"user: {user}")
 
@@ -50,5 +55,7 @@ def lambda_handler(event, context):
     # Return successful response
     return {
         "statusCode": 200,
-        "body": json.dumps({"message": "User successfully created", "user": user}),
+        "body": json.dumps(
+            {"message": "User successfully created", "user_id": user["user_id"]}
+        ),
     }
