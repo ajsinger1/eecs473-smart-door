@@ -10,7 +10,6 @@ AWS_IOT shadow;
 #define UUID_LEN 36
 #define JSON_BUF_LEN AWS_IOT_MQTT_RX_BUF_LEN
 
-
 char buffer[JSON_BUF_LEN];
 SemaphoreHandle_t jsonDocSemaphore = xSemaphoreCreateBinary();
 String state_str = "Uninitialized State";
@@ -23,9 +22,9 @@ char SENT_GET[] = "$aws/things/smart-handle/shadow/get";
 char SHADOW_UPDATE[] = "$aws/things/smart-handle/shadow/update";
 char SHADOW_DELTA[] = "$aws/things/smart-handle/shadow/update/delta";
 int status = WL_IDLE_STATUS;
-enum Mode { PROXIMITY, SECURE };
-enum LockState { LOCKED, UNLOCKED };
-enum UserState { LOCKOUT, DO_NOT_UNLOCK, UNLOCK };
+enum Mode { SECURE, PROXIMITY };
+enum LockState { UNLOCKED, LOCKED };
+enum UserState { UNLOCK, DO_NOT_UNLOCK, LOCKOUT };
 
 struct User {
   bool valid = false;
@@ -151,7 +150,7 @@ void State::updateDeltaFromJson(StaticJsonDocument<JSON_BUF_LEN>& stateDoc) {
 void State::report() {
   StaticJsonDocument<JSON_BUF_LEN> doc; // The size of this can be reduced if needed later
   toJsonDoc(doc);
-  serializeJsonPretty(doc, buffer, JSON_BUF_LEN); //DELETE ME LATER
+  serializeJsonPretty(doc, buffer, JSON_BUF_LEN); // DELETE ME LATER
   state_str = String(buffer);
   serializeJson(doc, buffer, JSON_BUF_LEN);
   if (shadow.publish(SHADOW_UPDATE, buffer) == 0) {
