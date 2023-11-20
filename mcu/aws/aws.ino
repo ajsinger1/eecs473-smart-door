@@ -22,9 +22,7 @@ char SENT_GET[] = "$aws/things/smart-handle/shadow/get";
 char SHADOW_UPDATE[] = "$aws/things/smart-handle/shadow/update";
 char SHADOW_DELTA[] = "$aws/things/smart-handle/shadow/update/delta";
 int status = WL_IDLE_STATUS;
-enum Mode { SECURE, PROXIMITY };
-enum LockState { UNLOCKED, LOCKED };
-enum UserState { UNLOCK, DO_NOT_UNLOCK, LOCKOUT };
+
 
 struct User {
   bool valid = false;
