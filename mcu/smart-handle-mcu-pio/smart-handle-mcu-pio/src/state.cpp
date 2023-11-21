@@ -38,9 +38,8 @@ void State::report(bool desired) {
 }
 
 enum Mode State::getMode() {
-  Serial.println("GETMODE");
   StateLock state_lock();
-  this->mode;
+  return this->mode;
 }
 
 enum LockState State::getLock() {
@@ -71,6 +70,7 @@ bool State::bleConnected(const String& uuid, uint16_t conn_id) {
     if (!user.valid)
       continue;
     if (user.uuid == uuid) {
+      Serial.println("User connected (conn_id " + String(conn_id) + ")");
       user.ble_connected = true;
       user.conn_id = conn_id;
       return true;
@@ -81,11 +81,13 @@ bool State::bleConnected(const String& uuid, uint16_t conn_id) {
 
 void State::bleDisconnected(uint16_t conn_id) {
   StateLock state_lock();
+  Serial.println("Looking for conn_id " + String(conn_id) + " to disconnect");
   for (User& user : this->users) {
-    if (!user.valid)
+    if (!user.valid || !user.ble_connected)
       continue;
     if (user.conn_id == conn_id) {
       user.ble_connected = false;
+      Serial.println("UUID " + user.uuid + " disconnected");
       return;
     }
   }
@@ -105,22 +107,11 @@ bool State::isBleConnIdConnected(uint16_t conn_id) {
 
 bool State::isUnlockUserConnected() {
   StateLock state_lock();
-  Serial.println("HERE1");
-  // int i = 0;
-  for (int i = 0; i < 8; i++) {
-    const User* user = this->users + i;
-    Serial.println("user new" + String(i));
-    Serial.println("members...");
-    // Serial.println(String(user));
-    Serial.println("valid: " + String(user->valid));
-    Serial.println("ble_connected: " + String(user->ble_connected));
-    Serial.println("state: " + String(user->state));
-    if (user->valid && user->ble_connected && user->state == UserState::UNLOCK) {
-      Serial.println("HERE3");
+  for (User& user : this->users) {
+    if (user.valid && user.ble_connected && user.state == UserState::UNLOCK) {
       return true;
     }
   }
-  Serial.println("HERE4");
   return false;
 }
 
