@@ -1,5 +1,6 @@
 #include "aws.h"
 #include "ble.h"
+#include "deadbolt.h"
 #include "driver/touch_pad.h"
 #include "state.h"
 #include <Arduino.h>
@@ -12,6 +13,7 @@
 
 SemaphoreHandle_t cap_unlock_semaphore = xSemaphoreCreateBinary();
 State state;
+Deadbolt deadbolt;
 
 void handle_touch_isr() {
   Serial.println("Cap Sensor Touched");
@@ -27,8 +29,6 @@ void cap_unlock_handler(void* _) {
     Serial.println("Cap unlock handler unblocked");
     if (state.getMode() == Mode::PROXIMITY && state.isUnlockUserConnected()) {
       Serial.println("UNLOCKING");
-      // TODO: Consider disabling interrupts here
-      // TODO: Call Lock/Unlock Driver
       state.setLock(LockState::UNLOCKED);
       vTaskDelay(CAP_UNLOCK_USER_STATE_CHANGE_MS / portTICK_PERIOD_MS);
       state.setConnectedUsersDoNotUnlock();
@@ -43,6 +43,7 @@ void cap_unlock_handler(void* _) {
 void setup() {
   Serial.begin(115200);
   delay(1000);
+  deadbolt.init();
   aws_init();
   ble_init();
   touchAttachInterrupt(TOUCH_PIN, handle_touch_isr, TOUCH_THRESHOLD);

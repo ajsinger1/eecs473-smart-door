@@ -1,6 +1,7 @@
 #include "state.h"
 #include "String.h"
 #include "aws.h"
+#include "deadbolt.h"
 
 // static State state = State();
 SemaphoreHandle_t state_mutex = xSemaphoreCreateMutex();
@@ -60,7 +61,11 @@ void State::setLock(enum LockState new_lock) {
   if (this->lock == new_lock)
     return;
   this->lock = new_lock;
-  // TODO: Call lock driver
+  if (new_lock == LockState::LOCKED) {
+    deadbolt.lock();
+  } else {
+    deadbolt.unlock();
+  }
   report(true);
 }
 
@@ -138,8 +143,12 @@ void State::updateFromJson(StaticJsonDocument<JSON_BUF_LEN>& stateDoc) {
     this->mode = jsonObj["mode"].as<Mode>();
 
   if (jsonObj.containsKey("lock")) {
-    this->lock = jsonObj["lock"].as<LockState>();
-    // TODO: Call LOCK/UNLOCK Driver (See state.h TODO)
+    LockState new_lock = jsonObj["lock"].as<LockState>();
+    this->lock = new_lock;
+    if (new_lock == LockState::LOCKED)
+      deadbolt.lock();
+    else
+      deadbolt.unlock();
   }
 
   if (jsonObj.containsKey("users")) {

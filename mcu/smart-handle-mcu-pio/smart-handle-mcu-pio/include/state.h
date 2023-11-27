@@ -21,8 +21,8 @@ extern SemaphoreHandle_t state_mutex;
 class State {
 private:
   enum Mode mode = PROXIMITY;
-  // TODO: Need to implement init for lock state
-  enum LockState lock = LOCKED;
+  // Deadbolt init unlocks the door by default
+  enum LockState lock = UNLOCKED;
   User users[8];
   void serialize(JsonObject&);
   void report(bool desired);
