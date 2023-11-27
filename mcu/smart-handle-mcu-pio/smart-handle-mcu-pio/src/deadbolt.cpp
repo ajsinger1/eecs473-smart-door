@@ -10,7 +10,7 @@ bool locking = false;
 
 
 
-enum DeadboltState Deadbolt::get_state() {
+enum DeadboltState deadbolt_state() {
   if (digitalRead(DEADBOLT_LOW_SWITCH) && digitalRead(DEADBOLT_HIGH_SWITCH)) {
     return DeadboltState::DEADBOLT_MIDDLE;
   } else if (digitalRead(DEADBOLT_LOW_SWITCH)) {
@@ -44,7 +44,7 @@ void Deadbolt::motor_coast() {
   mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
 }
 
-void Deadbolt::lock() {
+void deadbolt_lock() {
   // taskDISABLE_INTERRUPTS();
 
   locking = true;
