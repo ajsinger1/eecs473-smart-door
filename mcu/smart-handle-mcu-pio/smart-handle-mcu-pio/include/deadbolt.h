@@ -9,23 +9,17 @@
 #define MOTOR_TIMEOUT 5000
 
 enum DeadboltState { DEADBOLT_LOCKED, DEADBOLT_UNLOCKED, DEADBOLT_MIDDLE };
+static const int PWM_ON_DELAY = (int)(float(MOTOR_DUTY_CYCLE) / 100. * float(MOTOR_CYCLE_PERIOD_MS));
+static const int PWM_OFF_DELAY = (int)((1. - float(MOTOR_DUTY_CYCLE) / 100.) * float(MOTOR_CYCLE_PERIOD_MS));
 
-class Deadbolt {
-private:
-  static const int ON_DELAY = (int)(float(MOTOR_DUTY_CYCLE) / 100. * float(MOTOR_CYCLE_PERIOD_MS));
-  static const int OFF_DELAY = (int)((1. - float(MOTOR_DUTY_CYCLE) / 100.) * float(MOTOR_CYCLE_PERIOD_MS));
-  void motor_forward();
-  void motor_backward();
-  void motor_stop();
-  void motor_coast();
+void _motor_forward();
+void _motor_backward();
+void _motor_stop();
+void _motor_coast();
 
-public:
-  void init();
-  void unlock();
-  void lock();
-  enum DeadboltState get_state();
-};
-
-extern Deadbolt deadbolt;
+void deadbolt_init();
+void deadbolt_unlock();
+void deadbolt_lock();
+enum DeadboltState deadbolt_state();
 
 #endif

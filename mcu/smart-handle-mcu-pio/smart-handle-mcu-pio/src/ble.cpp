@@ -49,6 +49,10 @@ void ble_init() {
   // pAdvertising->setMinPreferred(0x12);
   NimBLEDevice::startAdvertising();
   Serial.println("Advertising...");
+  
+  //TODO: Enable BLE Disconnection task
+  // xTaskCreatePinnedToCore(ble_disconnect_task, "ble_disconnect_task", 5120, NULL, 1, NULL, 1);
+
 }
 
 void ble_disconnect_task(void* _) {

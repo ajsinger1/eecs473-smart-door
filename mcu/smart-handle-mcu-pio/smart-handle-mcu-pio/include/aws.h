@@ -10,8 +10,10 @@
 #define UUID_LEN 36
 #define JSON_BUF_LEN AWS_IOT_MQTT_RX_BUF_LEN
 
+// CHANGE THIS FOR DIFFERENT NETWORK (only 2.4 GHz supported on the esp32 RF module)
 const char WIFI_SSID[] = "Ari’s iPhone";
 const char WIFI_PASSWORD[] = "beefstik";
+
 const char HOST_ADDRESS[] = "av076j80qpn1a-ats.iot.us-east-2.amazonaws.com"; // AWS IoT Custom Endpoint Address
 const char CLIENT_ID[] = "smart-handle";
 const char SHADOW_GET[] = "$aws/things/smart-handle/shadow/get/accepted";
