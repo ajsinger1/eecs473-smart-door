@@ -48,6 +48,8 @@ void Deadbolt::lock() {
   // taskDISABLE_INTERRUPTS();
 
   locking = true;
+  detachInterrupt(digitalPinToInterrupt(DEADBOLT_HIGH_SWITCH));
+  attachInterrupt(digitalPinToInterrupt(DEADBOLT_LOW_SWITCH), ISR_lower_switch, FALLING);
   motor_backward();
   
   // int start_time = millis();
@@ -64,6 +66,8 @@ void Deadbolt::lock() {
 void Deadbolt::unlock() {
 
   unlocking = true;
+  detachInterrupt(digitalPinToInterrupt(DEADBOLT_LOW_SWITCH));
+  attachInterrupt(digitalPinToInterrupt(DEADBOLT_HIGH_SWITCH), ISR_lower_switch, FALLING);
   motor_forward();
 
   // taskDISABLE_INTERRUPTS();
