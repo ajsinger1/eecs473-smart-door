@@ -1,5 +1,9 @@
 #include "deadbolt.h"
 #include <Arduino.h>
+#include "driver/mcpwm.h"
+#include "soc/mcpwm_periph.h"
+
+
 
 enum DeadboltState Deadbolt::get_state() {
   if (digitalRead(DEADBOLT_LOW_SWITCH) && digitalRead(DEADBOLT_HIGH_SWITCH)) {
@@ -12,46 +16,53 @@ enum DeadboltState Deadbolt::get_state() {
 }
 
 void Deadbolt::motor_forward() {
-  digitalWrite(MOTOR_TERMINAL_1, HIGH);
-  digitalWrite(MOTOR_TERMINAL_2, LOW);
+
+  mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, 25.0);
+  
 }
 
 void Deadbolt::motor_backward() {
-  digitalWrite(MOTOR_TERMINAL_1, LOW);
-  digitalWrite(MOTOR_TERMINAL_2, HIGH);
+
+  mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A);
+  mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, 25.0);
+
 }
 
 void Deadbolt::motor_stop() {
-  digitalWrite(MOTOR_TERMINAL_1, HIGH);
-  digitalWrite(MOTOR_TERMINAL_2, HIGH);
+  mcpwm_set_signal_high(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
+  mcpwm_set_signal_high(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A);
 }
 
 void Deadbolt::motor_coast() {
-  digitalWrite(MOTOR_TERMINAL_1, LOW);
-  digitalWrite(MOTOR_TERMINAL_2, LOW);
+  mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A);
+  mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
 }
 
 void Deadbolt::lock() {
   // taskDISABLE_INTERRUPTS();
-  while (get_state() != DEADBOLT_LOCKED) {
-    Serial.println("LOCKING (state is " + String(get_state()) + ")");
+  
+  int start_time = millis();
+
+  while (get_state() != DEADBOLT_LOCKED && (millis() - start_time < MOTOR_TIMEOUT)){
+    Serial.println("LOCKING (state is " + String(get_state()) + "), elapsed time: " + String(millis() - start_time));
     motor_backward();
-    delay(ON_DELAY);
-    motor_coast();
-    delay(OFF_DELAY);
+    
   }
   motor_stop();
-  // taskENABLE_INTERRUPTS();
+  //taskENABLE_INTERRUPTS();
 }
 
 void Deadbolt::unlock() {
+
+
+
   // taskDISABLE_INTERRUPTS();
-  while (get_state() != DEADBOLT_UNLOCKED) {
-    Serial.println("UNLOCKING (state is " + String(get_state()) + ")");
+  int start_time = millis();
+  while (get_state() != DEADBOLT_UNLOCKED && (millis() - start_time < MOTOR_TIMEOUT)) {
+    Serial.println("UNLOCKING (state is " + String(get_state()) + "), elapsed time: " + String(millis() - start_time));
     motor_forward();
-    delay(ON_DELAY);
-    motor_coast();
-    delay(OFF_DELAY);
+    
   }
   motor_stop();
   // taskENABLE_INTERRUPTS();
@@ -60,7 +71,25 @@ void Deadbolt::unlock() {
 void Deadbolt::init() {
   pinMode(DEADBOLT_HIGH_SWITCH, INPUT_PULLUP);
   pinMode(DEADBOLT_LOW_SWITCH, INPUT_PULLUP);
-  pinMode(MOTOR_TERMINAL_1, OUTPUT);
-  pinMode(MOTOR_TERMINAL_2, OUTPUT);
-  unlock();
+  
+
+  //PWM INIT
+  Serial.print("deadbolt init called\n");
+
+
+  mcpwm_config_t pwm_config;
+
+  pwm_config.frequency = 1000;    //frequency = 500Hz,
+  pwm_config.cmpr_a = 0;    //duty cycle of PWMxA = 0
+  pwm_config.cmpr_b = 0;    //duty cycle of PWMxb = 0
+  pwm_config.counter_mode = MCPWM_UP_COUNTER;
+  pwm_config.duty_mode = MCPWM_DUTY_MODE_0;
+  mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);
+  
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, MOTOR_TERMINAL_1);
+  mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, MOTOR_TERMINAL_2);
+
+
+  
+  
 }
