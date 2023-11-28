@@ -3,6 +3,11 @@
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_periph.h"
 
+bool unlocking = false;
+bool locking = false;
+
+
+
 
 
 enum DeadboltState Deadbolt::get_state() {
@@ -41,37 +46,61 @@ void Deadbolt::motor_coast() {
 
 void Deadbolt::lock() {
   // taskDISABLE_INTERRUPTS();
-  
-  int start_time = millis();
 
-  while (get_state() != DEADBOLT_LOCKED && (millis() - start_time < MOTOR_TIMEOUT)){
-    Serial.println("LOCKING (state is " + String(get_state()) + "), elapsed time: " + String(millis() - start_time));
-    motor_backward();
+  locking = true;
+  motor_backward();
+  
+  // int start_time = millis();
+
+  // while (get_state() != DEADBOLT_LOCKED && (millis() - start_time < MOTOR_TIMEOUT)){
+  //   Serial.println("LOCKING (state is " + String(get_state()) + "), elapsed time: " + String(millis() - start_time));
+  //   motor_backward();
     
-  }
-  motor_stop();
+  // }
+  // motor_stop();
   //taskENABLE_INTERRUPTS();
 }
 
 void Deadbolt::unlock() {
 
-
+  unlocking = true;
+  motor_forward();
 
   // taskDISABLE_INTERRUPTS();
-  int start_time = millis();
-  while (get_state() != DEADBOLT_UNLOCKED && (millis() - start_time < MOTOR_TIMEOUT)) {
-    Serial.println("UNLOCKING (state is " + String(get_state()) + "), elapsed time: " + String(millis() - start_time));
-    motor_forward();
+  // int start_time = millis();
+  // while (get_state() != DEADBOLT_UNLOCKED && (millis() - start_time < MOTOR_TIMEOUT)) {
+  //   Serial.println("UNLOCKING (state is " + String(get_state()) + "), elapsed time: " + String(millis() - start_time));
+  //   motor_forward();
     
-  }
-  motor_stop();
+  // }
+  // motor_stop();
   // taskENABLE_INTERRUPTS();
 }
 
+
+void ISR_higher_switch(){ //MIGHT HAVE TO SWITCH THE INTERRUPTS
+  if(unlocking){
+    motor_stop();
+    unlocking = false;
+  }
+}
+
+
+void ISR_lower_switch(){
+  if(locking){
+    motor_stop();
+    locking = false;
+  } 
+}
+
+
 void Deadbolt::init() {
-  pinMode(DEADBOLT_HIGH_SWITCH, INPUT_PULLUP);
-  pinMode(DEADBOLT_LOW_SWITCH, INPUT_PULLUP);
   
+  
+  //interrupt init
+
+  attachInterrupt(digitalPinToInterrupt(DEADBOLT_HIGH_SWITCH), ISR_higher_switch, FALLING);
+  attachInterrupt(digitalPinToInterrupt(DEADBOLT_LOW_SWITCH), ISR_lower_switch, FALLING);
 
   //PWM INIT
   Serial.print("deadbolt init called\n");
