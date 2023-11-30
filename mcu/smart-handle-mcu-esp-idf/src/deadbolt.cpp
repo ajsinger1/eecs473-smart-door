@@ -3,6 +3,8 @@
 #include "soc/mcpwm_periph.h"
 #include <Arduino.h>
 
+SemaphoreHandle_t deadbolt_semaphore = xSemaphoreCreateBinary();
+
 bool unlocking = false;
 bool locking = false;
 
@@ -34,45 +36,55 @@ void _motor_stop() {
 }
 
 void deadbolt_unlock() {
+   xSemaphoreTake(deadbolt_semaphore, portMAX_DELAY);
   if (deadbolt_state() == DeadboltState::DEADBOLT_UNLOCKED) {
     Serial.println("DEADBOLT ALREADY UNLOCKED");
+    xSemaphoreGive(deadbolt_semaphore);
     return;
   }
   Serial.println("UNLOCKING NOW");
-  unlocking = true;
-  locking = false;
+  // unlocking = true;
+  // locking = false;
   detachInterrupt(digitalPinToInterrupt(DEADBOLT_HIGH_SWITCH));
   attachInterrupt(digitalPinToInterrupt(DEADBOLT_LOW_SWITCH), ISR_lower_switch, FALLING);
   _motor_backward();
 }
 
 void deadbolt_lock() {
+   xSemaphoreTake(deadbolt_semaphore, portMAX_DELAY);
   if (deadbolt_state() == DeadboltState::DEADBOLT_LOCKED) {
     Serial.println("DEADBOLT ALREADY LOCKED");
+     xSemaphoreGive(deadbolt_semaphore);
     return;
   }
   Serial.println("LOCKING NOW");
-  unlocking = false;
-  locking = true;
+  // unlocking = false;
+  // locking = true;
   detachInterrupt(digitalPinToInterrupt(DEADBOLT_LOW_SWITCH));
   attachInterrupt(digitalPinToInterrupt(DEADBOLT_HIGH_SWITCH), ISR_higher_switch, FALLING);
   _motor_forward();
 }
 
 void ISR_higher_switch() { // MIGHT HAVE TO SWITCH THE INTERRUPTS
-  if (locking) {
-    _motor_stop();
-    locking = false;
-    Serial.println("ISR HIGHER");
-  }
+  // if (locking) {
+  //   _motor_stop();
+  //   locking = false;
+  //   Serial.println("ISR HIGHER");
+  // }
+  _motor_stop();
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  xSemaphoreGiveFromISR(deadbolt_semaphore, &xHigherPriorityTaskWoken);
 }
 
 void ISR_lower_switch() {
-  if (unlocking) {
-    _motor_stop();
-    unlocking = false;
-    Serial.println("ISR LOWER");
-  }
+  // if (unlocking) {
+  //   _motor_stop();
+  //   unlocking = false;
+  //   Serial.println("ISR LOWER");
+  // }
+  _motor_stop();
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  xSemaphoreGiveFromISR(deadbolt_semaphore, &xHigherPriorityTaskWoken);
 }
 
 void deadbolt_init() {
@@ -92,4 +104,6 @@ void deadbolt_init() {
 
   attachInterrupt(digitalPinToInterrupt(DEADBOLT_HIGH_SWITCH), ISR_higher_switch, FALLING);
   attachInterrupt(digitalPinToInterrupt(DEADBOLT_LOW_SWITCH), ISR_lower_switch, FALLING);
+
+  xSemaphoreGive(deadbolt_semaphore);
 }

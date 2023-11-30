@@ -19,7 +19,7 @@ void touch_handler(void* _) {
     Serial.println("Cap unlock handler unblocked");
     if (state.getMode() == Mode::PROXIMITY && state.isUnlockUserConnected()) {
       Serial.println("UNLOCKING");
-      state.setLock(LockState::UNLOCKED);
+      state.setLock(true, LockState::UNLOCKED);
       vTaskDelay(CAP_UNLOCK_USER_STATE_CHANGE_MS / portTICK_PERIOD_MS);
       state.setConnectedUsersDoNotUnlock();
     } else {
@@ -32,7 +32,7 @@ void touch_handler(void* _) {
 
 void touch_init() {
   touchAttachInterrupt(TOUCH_PIN, touch_isr, TOUCH_THRESHOLD);
-  xTaskCreatePinnedToCore(touch_handler, "t1", 4096*2, NULL, configMAX_PRIORITIES - 1, NULL, 1);
+  xTaskCreatePinnedToCore(touch_handler, "t1", 4096*2, NULL, 3, NULL, 1);
 }
 
 void set_touch_threshold(touch_value_t threshold) {
