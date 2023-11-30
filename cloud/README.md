@@ -1,8 +1,7 @@
 # Cloud
 Source code for cloud app
 
-Please make branches for work on separate components, and make sure to add approprite ignore files. Readme instructions for running locally also helpful :)
-
+deploy.sh (script to quickly iterate on deploying to aws) will reveal which files are lambda entry points behind the API gateway. Rest of the .py files are helpers. 
 
 
 ### Authors
