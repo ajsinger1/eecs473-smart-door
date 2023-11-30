@@ -187,7 +187,7 @@ int AWS_IOT::subscribe(const char* subTopic, pSubCallBackHandler_t pSubCallBackH
   subApplCallBackHandler = pSubCallBackHandler;
 
   ESP_LOGI(TAG, "Subscribing...");
-  rc = aws_iot_mqtt_subscribe(&client, subTopic, strlen(subTopic), QOS1, iot_subscribe_callback_handler, NULL);
+  rc = aws_iot_mqtt_subscribe(&client, subTopic, strlen(subTopic), QOS0, iot_subscribe_callback_handler, NULL);
   if (SUCCESS != rc) {
     ESP_LOGE(TAG, "Error subscribing : %d ", rc);
     return rc;

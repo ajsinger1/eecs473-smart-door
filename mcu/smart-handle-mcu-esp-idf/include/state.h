@@ -41,7 +41,7 @@ public:
   enum Mode getMode();
   enum LockState getLock();
   void setMode(enum Mode);
-  void setLock(enum LockState);
+  void setLock(bool, enum LockState);
   bool bleConnected(const String&, uint16_t);
   void bleDisconnected(uint16_t);
   bool isBleConnIdConnected(uint16_t);
