@@ -2,6 +2,7 @@
 #include "state.h"
 #include "touch.h"
 #include <NimBLEDevice.h>
+#include <Arduino.h>
 
 // UUIDs for service and characteristic
 #define SERVICE_UUID "614842ae-f98b-4692-9dcb-0b2339edabe1"
@@ -37,6 +38,14 @@ void TouchCharacteristicCallbacks::onRead(NimBLECharacteristic* pCharacteristic,
   pCharacteristic->setValue(touchRead(TOUCH_PIN));
 }
 
+void TouchCharacteristicCallbacks::onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc) {
+  String threshold_string = pCharacteristic->getValue();
+  touch_value_t threshold = threshold_string.toInt();
+  Serial.println("Setting touch threshold to " + String(threshold));
+  set_touch_threshold(threshold);
+}
+
+
 void ble_init() {
   NimBLEDevice::init("handle");
   NimBLEDevice::setPower(ESP_PWR_LVL_P9);
@@ -44,7 +53,7 @@ void ble_init() {
   pServer->setCallbacks(new SmartHandleServerCallbacks());
   NimBLEService* pService = pServer->createService(SERVICE_UUID);
   NimBLECharacteristic* pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID, NIMBLE_PROPERTY::WRITE);
-  NimBLECharacteristic* touch_characteristic = pService->createCharacteristic(TOUCH_UUID, NIMBLE_PROPERTY::READ);
+  NimBLECharacteristic* touch_characteristic = pService->createCharacteristic(TOUCH_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
   pCharacteristic->setCallbacks(new UUIDCharacteristicCallbacks());
   touch_characteristic->setCallbacks(new TouchCharacteristicCallbacks());
   touch_characteristic->setValue(touchRead(TOUCH_PIN));

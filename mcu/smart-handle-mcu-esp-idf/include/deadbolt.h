@@ -5,6 +5,9 @@
 #define DEADBOLT_HIGH_SWITCH 17
 #define DEADBOLT_LOW_SWITCH 5
 #define MOTOR_DUTY_CYCLE 60
+#include <Arduino.h>
+
+extern SemaphoreHandle_t deadbolt_semaphore;
 
 enum DeadboltState { DEADBOLT_LOCKED, DEADBOLT_UNLOCKED, DEADBOLT_MIDDLE };
 

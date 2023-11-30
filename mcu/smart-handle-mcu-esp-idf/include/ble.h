@@ -17,6 +17,7 @@ class UUIDCharacteristicCallbacks : public BLECharacteristicCallbacks {
 
 class TouchCharacteristicCallbacks : public BLECharacteristicCallbacks {
   void onRead(NimBLECharacteristic*, ble_gap_conn_desc*);
+  void onWrite(NimBLECharacteristic*, ble_gap_conn_desc*);
 };
 
 void ble_init();
