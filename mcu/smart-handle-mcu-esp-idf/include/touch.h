@@ -4,11 +4,13 @@
 #define TOUCH_PIN                                                                                                      \
   TOUCH_PAD_NUM2 // GPIO 2 (see
                  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/touch_pad.html)
-#define TOUCH_THRESHOLD 24
+#define TOUCH_THRESHOLD 5
 #define CAP_UNLOCK_USER_STATE_CHANGE_MS 5000
+#include <Arduino.h>
 
 void touch_isr();
 void touch_handler(void*);
 void touch_init();
+void set_touch_threshold(touch_value_t);
 
 #endif

@@ -34,3 +34,8 @@ void touch_init() {
   touchAttachInterrupt(TOUCH_PIN, touch_isr, TOUCH_THRESHOLD);
   xTaskCreatePinnedToCore(touch_handler, "t1", 4096*2, NULL, configMAX_PRIORITIES - 1, NULL, 1);
 }
+
+void set_touch_threshold(touch_value_t threshold) {
+  touchDetachInterrupt(TOUCH_PIN);
+  touchAttachInterrupt(TOUCH_PIN, touch_isr, threshold);
+}
