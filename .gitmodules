@@ -1,0 +1,5 @@
+
+[submodule "mobile"]
+	path = mobile
+	url = git@github.com:sundeep-ravella/smart-handle-app.git
+	branch = master
